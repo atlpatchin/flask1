@@ -13,6 +13,7 @@ import os
 from flask.ext.script import Shell
 from flask.ext.migrate import Migrate,MigrateCommand
 from flask.ext.mail import Mail,Message
+from threading import Thread
 basedir = os.path.abspath(os.path.dirname(__file__))
 app=Flask(__name__)
 moment = Moment(app)
@@ -23,12 +24,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] =\
          'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['MAIL_SERVER']='smtp.163.com'
-app.config['MAIL_PORT']=465
-app.config['MAIL_USE_TLS']=True
+app.config['MAIL_PORT']=25
+app.config['MAIL_USE_TLS']=False #shi fou jia mi
 app.config['MAIL_USERNAME']='atlpat@163.com'
 app.config['MAIL_PASSWORD']='llh151'
 app.config['FLASKY_MAIL_SUBJECT_PREFIX']='[Flasky]'
 app.config['FLASKY_MAIL_SENDER']='Flasky Admin <atlpat@163.com>'
+
 def send_email(to,subject,template,**kwargs):
     msg= Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX']+subject,sender=app.config['FLASKY_MAIL_SENDER'],recipients=[to])
     msg.body = render_template(template+'.txt',**kwargs)
@@ -38,6 +40,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app,db)
 app.config['SECRET_KEY']='hard go guess string'
 mail=Mail(app)
+app.config['FLASKY_ADMIN']=os.environ.get('FLASKY_ADMIN')
 class NameForm(Form):
     name = StringField('What is you name?',validators=[Required()])
     submit = SubmitField('Submit')
