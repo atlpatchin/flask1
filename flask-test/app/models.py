@@ -11,14 +11,16 @@ def load_user(user_id):
 class Permission:
     FOLLOW = 0x01
     COMMENT =0x02
-    WRITE_ARTICLES = 0x08
+    WRITE_ARTICLES = 0x04
+    MODERATE_COMMENTS = 0x08
+
     ADMINISTER =0x80
 
 class Role(db.Model):
     __tablename__='roles'
     id = db.Column(db.Integer,primary_key=True)
     name=db.Column(db.String(64),unique=True)
-    default = db.Column(db.String(64),unique=True,index=True)
+    default = db.Column(db.Boolean,default=False,index=True)
     permissions = db.Column(db.Integer)
 
     def __repr__(self):
@@ -30,7 +32,7 @@ class Role(db.Model):
         roles = {
                 'User':(Permission.FOLLOW |
                         Permission.COMMENT |
-                        Permisssion.WRITE_ARTICLES,True
+                        Permission.WRITE_ARTICLES,True
                        ),
                 'Moderator':(
                         Permission.FOLLOW |
@@ -46,7 +48,7 @@ class Role(db.Model):
             role = Role.query.filter_by(name=r).first()
             if role is None:
                 role = Role(name=r)
-            role.permission = roles[r][0]
+            role.permissions = roles[r][0]
             role.default = roles[r][0]
             db.session.add(role)
         db.session.commit()
